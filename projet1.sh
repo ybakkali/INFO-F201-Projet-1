@@ -13,17 +13,29 @@ then
     mkdir $2
   fi
 fi
-counter(){
+
+createPoolV2(){
     for file in $1/*
     do
     if [ -d $file ]
     then
         echo $file
-        counter $file
+        createPoolV2 $file $2 $3 $4
     else
-      echo "file name :" ${file##*/}
+      image=${file##*/}
+      imageDate=${image%_*}
+      year=$(date +%Y -d @$imageDate)
+      month=$(date +%m -d @$imageDate)
+      day=$(date +%d -d @$imageDate)
+      echo "file name :" $image
+      mkdir -p $2/$year/$month/$day
+      sudo chown $3:$4 $2/$year
+      sudo chown $3:$4 $2/$year/$month
+      sudo chown $3:$4 $2/$year/$month/$day
+      sudo cp $file $2/$year/$month/$day
+      sudo chown 1000:$4 $2/$year/$month/$day/$image
     fi
     done
 }
 
-counter $1
+createPoolV2 $1 $2 $3 $4
