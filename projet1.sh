@@ -15,25 +15,33 @@ then
 fi
 
 createPoolV2(){
-    for file in $1/*
+    for directory in $1/*
     do
-    if [ -d $file ]
+    if [ -d $directory ]
     then
-        echo $file
-        createPoolV2 $file $2 $3 $4
+        echo $directory
+        createPoolV2 $directory $2 $3 $4
     else
-      image=${file##*/}
-      imageDate=${image%_*}
-      year=$(date +%Y -d @$imageDate)
-      month=$(date +%m -d @$imageDate)
-      day=$(date +%d -d @$imageDate)
-      echo "file name :" $image
-      mkdir -p $2/$year/$month/$day
-      sudo chown $3:$4 $2/$year
-      sudo chown $3:$4 $2/$year/$month
-      sudo chown $3:$4 $2/$year/$month/$day
-      sudo cp $file $2/$year/$month/$day
-      sudo chown 1000:$4 $2/$year/$month/$day/$image
+        #Directory User
+        dirPATH=${directory%/*}
+        dirLS=($(ls -ld $dirPATH ))
+        dirUSER=${dirLS[2]}
+        echo $dirUSER
+        #File
+        image=${directory##*/}
+        imageDate=${image%_*}
+        year=$(date +%Y -d @$imageDate)
+        month=$(date +%m -d @$imageDate)
+        day=$(date +%d -d @$imageDate)
+        echo "file name :" $image
+        #Create directories (year/month/day)
+        mkdir -p $2/$year/$month/$day
+        #Directories rights
+        sudo chown $3:$4 $2/$year
+        sudo chown $3:$4 $2/$year/$month
+        sudo chown $3:$4 $2/$year/$month/$day
+        sudo cp $directory $2/$year/$month/$day
+        sudo chown $3:$4 $2/$year/$month/$day/$image
     fi
     done
 }
