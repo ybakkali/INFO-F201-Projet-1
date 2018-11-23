@@ -6,18 +6,23 @@ echo $4
 
 PoolV2(){
 
-    # Vérifie que si le pool V1 existe
+    # Renvoie True si le pool V1 existe et crée le pool V2 s'il n'existe pas.
+    # Sinon False
 
     if [ -d $1 ]
+    # Pool V1 existe
     then
       if [ -d $2 ]
       then
-        echo "OK"
+        # Pool V2 existe
+        echo "Pool V2 existe"
       else
         mkdir $2
+        # Crée le pool V2
       fi
       return 0
     else
+      # Pool V1 n'existe pas
       return 1
     fi
 }
@@ -27,10 +32,10 @@ isUser(){
   # Renvoie True si l'utilisateur existe sur la machine sinon False
 
   if id "$1" >/dev/null 2>&1; then
-        echo "user exists"
+        echo "Utilisateur $1 existe"
         return 0
   else
-        echo "user does not exist"
+        echo "Utilisateur $1 n'existe pas"
         return 1
   fi
 }
@@ -64,10 +69,11 @@ setOwner() {
 }
 poolV1_to_poolV2(){
 
-    # Fonction qui permet la migration des fichiers du pool V1 vers le pool V2
+    # Fonction récursive qui permet la migration des fichiers du pool V1
+    # vers le pool V2
 
-    # Pour chaque répertoire du pool v1
     for directory in $1/*
+    # Pour chaque répertoire dans pool V1
     do
     if [ -d $directory ]
     then
@@ -81,6 +87,8 @@ poolV1_to_poolV2(){
         if isUser $dirName
         then
             dirUSER=$dirName
+            # Le nom du répertoire personnel correspond
+            # à un utilisateur existant sur la machine
         else
             dirLS=($(ls -ld $dirPATH ))
             # Liste des informations sur le répertoire
@@ -88,32 +96,27 @@ poolV1_to_poolV2(){
             # Le propriétaire du répertoire personnel
         fi
 
-        # Nom du fichier en cours de traitement
         photoName=${directory##*/}
+        # Nom du fichier en cours de traitement
         photoDate=${photoName%_*}
+        # Date contenu dans le nom
+        echo "Nom du fichier :" $photoName
         year=$(date +%Y -d @$photoDate)
         month=$(date +%m -d @$photoDate)
         day=$(date +%d -d @$photoDate)
-        echo "file name :" $photoName
 
-        # Créer les répertoires (année/mois/jour)
         mkdir -p $2/$dirUSER/$year/$month/$day
-
-        #Directories rights
-        #chown $3:$4 $2/$dirUSER $2/$dirUSER/$year $2/$dirUSER/$year/$month $2/$dirUSER/$year/$month/$day
-        #setRights $2/$dirUSER $2/$dirUSER/$year $2/$dirUSER/$year/$month $2/$dirUSER/$year/$month/$day
-
+        # Créer les répertoires (année/mois/jour)
         cp $directory $2/$dirUSER/$year/$month/$day
-        # Copier la photo dans le pool v2
+        # Copier la photo dans le pool V2
         newPhotoName=${photoName#*_}
+        # Nouveau nom du photo dans pool V2
         mv $2/$dirUSER/$year/$month/$day/$photoName $2/$dirUSER/$year/$month/$day/$newPhotoName
         # Renommer la photo
-
-        #chown $dirUSER:$4 $2/$dirUSER/$year/$month/$day/$photoName
-        #chmod u=wrx,g=rx,o=- $2/$dirUSER/$year/$month/$day/$photoName
     fi
     done
 }
+
 main() {
     if PoolV2 $1 $2
         poolV1_to_poolV2 $1 $2 $3 $4
