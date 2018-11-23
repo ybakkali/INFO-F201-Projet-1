@@ -4,6 +4,13 @@ echo $2
 echo $3
 echo $4
 
+setRights() {
+
+  # Fixe les permissions d'un fichier ou d'un dossier
+
+  chmod u=wrx,g=rx,o=- $1
+}
+
 PoolV2(){
 
     # Renvoie True si le pool V1 existe et crée le pool V2 s'il n'existe pas.
@@ -19,6 +26,7 @@ PoolV2(){
       else
         mkdir $2
         # Crée le pool V2
+        setRights $2
       fi
       return 0
     else
@@ -38,13 +46,6 @@ isUser(){
         echo "Utilisateur $1 n'existe pas"
         return 1
   fi
-}
-
-setRights() {
-
-  # Fixe les permissions d'un fichier ou d'un dossier
-
-  chmod u=wrx,g=rx,o=- $1
 }
 
 setOwner() {
@@ -83,7 +84,6 @@ poolV1_to_poolV2(){
         # "PATH" vers le répertoire courant
         dirName=${dirPATH##*/}
         # Nom du répertoire personnel en cours de traitement
-
         if isUser $dirName
         then
             dirUSER=$dirName
@@ -95,7 +95,6 @@ poolV1_to_poolV2(){
             dirUSER=${dirLS[2]}
             # Le propriétaire du répertoire personnel
         fi
-
         photoName=${directory##*/}
         # Nom du fichier en cours de traitement
         photoDate=${photoName%_*}
@@ -119,11 +118,11 @@ poolV1_to_poolV2(){
 
 main() {
     if PoolV2 $1 $2
+    then
         poolV1_to_poolV2 $1 $2 $3 $4
         setOwner $2 $3 $4
-        ls -l -R $2
         chown $3:$4 $2
-        chmod u=wrx,g=rx,o=- $2
+        ls -l -R $2
     fi
 }
 
