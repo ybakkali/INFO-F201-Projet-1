@@ -12,8 +12,6 @@ PoolV2(){
         echo "OK"
       else
         mkdir $2
-        sudo chown $3:$4 $2
-        sudo chmod u=wrx,g=rx,o=- $2
       fi
     fi
 }
@@ -37,15 +35,13 @@ setOwner() {
   if [ -d $directory ]
   then
       sudo chown $2:$3 $directory
-      setRights $directory
-      ls -l $directory
       setOwner $directory $2 $3
+      setRights $directory
   else
       currentDir=${directory##*v2/}
       dirName=${currentDir%%/*}
       sudo chown $dirName:$3 $directory
       setRights $directory
-      ls -l $directory
   fi
   done
 }
@@ -55,7 +51,6 @@ poolV1_to_poolV2(){
     do
     if [ -d $directory ]
     then
-        echo $directory
         poolV1_to_poolV2 $directory $2 $3 $4
     else
         #Directory name
@@ -70,7 +65,6 @@ poolV1_to_poolV2(){
             dirLS=($(ls -ld $dirPATH ))
             dirUSER=${dirLS[2]}
         fi
-        echo $dirName $dirUSER
 
         #File
         photo=${directory##*/}
@@ -95,7 +89,7 @@ poolV1_to_poolV2(){
         cp $directory $2/$dirUSER/$year/$month/$day
         newPhotoName=${photo#*_}
         mv $2/$dirUSER/$year/$month/$day/$photo $2/$dirUSER/$year/$month/$day/$newPhotoName
-        
+
         #sudo chown $dirUSER:$4 $2/$dirUSER/$year/$month/$day/$photo
         #sudo chmod u=wrx,g=rx,o=- $2/$dirUSER/$year/$month/$day/$photo
     fi
@@ -105,6 +99,9 @@ main() {
     PoolV2 $1 $2
     poolV1_to_poolV2 $1 $2 $3 $4
     setOwner $2 $3 $4
+    ls -l -R $2
+    sudo chown $3:$4 $2
+    sudo chmod u=wrx,g=rx,o=- $2
 }
 
 main $1 $2 $3 $4
