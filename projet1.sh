@@ -30,6 +30,8 @@ poolV1(){
       else
         mkdir $2
         # Pool V2 n'existe pas on le crée
+        chown $3:$4 $2
+        setRights $2
       fi
       return 0
     else
@@ -112,42 +114,38 @@ setOwner() {
   # associé à un fichier photo ou à un dossier dans le pool V2
 
   for directory in $1/*
-  # Pour chaque répertoire dans pool V1
+  # Pour chaque répertoire dans pool V2
   do
-  if [ -d $directory ]
-  then
-      chown $2:$3 $directory
-      # Désigner photo_admin comme propriétaire du répertoire
-      setOwner $directory $2 $3
-      # Pour chaque sous-répertoire dans le répertoire "directory"
-      setRights $directory
-      # Rendre le répertoire inaccessible au reste
-      # des utilisateurs de la machine
-  else
-      currentDir=${directory##*v2/}
-      # "PATH" vers le répertoire courant
-      dirName=${currentDir%%/*}
-      # Nom du répertoire
-      chown $dirName:$3 $directory
-      # Désigner l’actuel propriétaire du fichier photo
-      # comme nouveau propriétaire
-      setRights $directory
-      # Rendre le fichier photo inaccessible au reste
-      # des utilisateurs de la machine
-  fi
+    setRights $directory
+    # Rendre le répertoire ou le fichier photo inaccessible au reste
+    # des utilisateurs de la machine
+
+    if [ -d $directory ]
+    then
+        chown $2:$3 $directory
+        # Désigner photo_admin comme propriétaire du répertoire
+        setOwner $directory $2 $3
+        # Pour chaque sous-répertoire dans le répertoire "directory"
+    else
+        currentDir=${directory##*v2/}
+        # "PATH" vers le répertoire courant
+        dirName=${currentDir%%/*}
+        # Nom du répertoire
+        chown $dirName:$3 $directory
+        # Désigner l’actuel propriétaire du fichier photo
+        # comme nouveau propriétaire
+    fi
   done
 }
 main() {
-    if poolV1 $1 $2
+    if poolV1 $1 $2 $3 $4
     # Si le pool V1 existe on commence la migration
     then
         poolV1_to_poolV2 $1 $2 $3 $4
         # Migration des fichiers photo du pool V1 vers pool V2
         setOwner $2 $3 $4
-        # Désigner les propriétaire
-        chown $3:$4 $2
-        setRights $2
-        ls -l -R $2
+        # Désigner les propriétaires
+        #ls -l -R $2
     fi
 }
 
