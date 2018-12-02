@@ -1,8 +1,10 @@
 #!/bin/bash
-echo $1
-echo $2
-echo $3
-echo $4
+# Nom : BAKKALI Yahya
+# Matricule : 000445166
+echo "Chemin vers pool V1 :" $1
+echo "Chemin vers pool V2 :" $2
+echo "Photo admin uid :" $3
+echo "Photo group gid" $4
 
 setRights() {
 
@@ -67,7 +69,7 @@ poolV1_to_poolV2(){
         poolV1_to_poolV2 $directory $2 $3 $4
         # Pour chaque sous-répertoire dans le répertoire "directory"
     else
-        # Sinon "directory" est une photo
+        # Sinon "directory" est un fichier photo
         dirPATH=${directory%/*}
         # "PATH" vers le répertoire courant
         dirName=${dirPATH##*/}
@@ -92,12 +94,19 @@ poolV1_to_poolV2(){
         photoOwner=${photoLS[2]}
         # Le propriétaire de la photo
         echo "Nom du fichier :" $photoName
+        # Extraire l'année , le mois et le jour de timestamp POSIX
         year=$(date +%Y -d @$photoDate)
         month=$(date +%m -d @$photoDate)
         day=$(date +%d -d @$photoDate)
 
-        mkdir -p $2/$dirUSER/$year/$month/$day
-        # Créer les répertoires (utilisateur/année/mois/jour)
+        if [ ! -d $2/$dirUSER ]
+        then
+          mkdir $2/$dirUSER
+          # Créer le répertoire utilisateur
+        fi
+
+        mkdir -p $2/$photoOwner/$year/$month/$day
+        # Créer les répertoires (année/mois/jour)
         cp $directory $2/$photoOwner/$year/$month/$day
         # Copier la photo dans le pool V2
         newPhotoName=${photoName#*_}
@@ -130,7 +139,7 @@ setOwner() {
         currentDir=${directory##*v2/}
         # "PATH" vers le répertoire courant
         dirName=${currentDir%%/*}
-        # Nom du répertoire
+        # Nom du répertoire (nom du propriétaire)
         chown $dirName:$3 $directory
         # Désigner l’actuel propriétaire du fichier photo
         # comme nouveau propriétaire
