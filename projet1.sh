@@ -1,8 +1,8 @@
 #!/bin/bash
 # Nom : BAKKALI Yahya
 # Matricule : 000445166
-echo "Chemin vers pool V1 :" $1
-echo "Chemin vers pool V2 :" $2
+echo "Chemin vers le pool V1 :" $1
+echo "Chemin vers le pool V2 :" $2
 echo "Photo admin uid :" $3
 echo "Photo group gid" $4
 
@@ -26,6 +26,7 @@ poolV1(){
       # Désigner photo_admin comme propriétaire du répertoire
       return 0
     else
+      echo "Pool V1 n'existe pas"
       # Pool V1 n'existe pas
       return 1
     fi
@@ -88,7 +89,7 @@ poolV1_to_poolV2(){
         # Liste des informations sur la photo
         photoOwner=${photoLS[2]}
         # Le propriétaire de la photo
-        echo "Nom du fichier :" $photoName
+        echo "Déplacement de la photo :" $photoName
         # Extraire l'année , le mois et le jour de timestamp POSIX
         year=$(date +%Y -d @$photoDate)
         month=$(date +%m -d @$photoDate)
@@ -125,19 +126,36 @@ poolV1_to_poolV2(){
     done
 }
 
+canRunIt() {
+  user=$(id -u)
+  if [ "$user" = "$1" ]
+  #Le script est exécuté par le photo admin
+  #qui a le droit de modifier l'arborescence
+  then
+    return 0
+  elif [ "$user" = "0" ]
+  then
+    # Le script est exécuté par le superutilisateur
+    return 0
+  else
+    echo "Permission non accordée pour exécuter le script"
+    exit 1
+    # Le script n'est pas exécuté et retourne un code d'erreur
+  fi
+}
+
 main() {
-    if [ "$(id -u)" = "$3" ]
-    #Vérifier que le code est exécuté par le photo admin
-    #qui a le droit de modifier l'arborescence
-    then
-        if poolV1 $1 $2 $3 $4
-        # Si le pool V1 existe on commence la migration
-        then
-            poolV1_to_poolV2 $1 $2 $3 $4
-            # Migration des fichiers photo du pool V1 vers pool V2
-            #ls -l -R $2
-        fi
-    fi
+  canRunIt $3
+  #Vérifier si le script peut s'exécuter
+  if poolV1 $1 $2 $3 $4
+  # Si le pool V1 existe on commence la migration
+  then
+      echo "Début de la migration du pool V1 vers le pool V2"
+      poolV1_to_poolV2 $1 $2 $3 $4
+      # Migration des fichiers photo du pool V1 vers pool V2
+      echo "Fin de migration"
+  fi
+
 }
 
 main $1 $2 $3 $4
