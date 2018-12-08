@@ -21,8 +21,9 @@ poolV1(){
       else
         mkdir -m 750 $2
         # Pool V2 n'existe pas on le crée
-        chown $3:$4 $2
       fi
+      chown $3:$4 $2
+      # Désigner photo_admin comme propriétaire du répertoire
       return 0
     else
       # Pool V1 n'existe pas
@@ -111,25 +112,28 @@ poolV1_to_poolV2(){
         chmod 750 $dir1 $dir2 $dir3 $dir4
         # Désigner photo_admin comme propriétaire des répertoires (année/mois/jour)
 
-        cp -p $photoPAtH $2/$photoOwner/$year/$month/$day
+        cp $photoPAtH $2/$photoOwner/$year/$month/$day
         # Copier la photo dans le pool V2
         newPhotoName=${photoName#*_}
         # Nouveau nom du photo dans le pool V2
         mv $2/$photoOwner/$year/$month/$day/$photoName $2/$photoOwner/$year/$month/$day/$newPhotoName
         # Renommer la photo
-        chgrp $4 $2/$photoOwner/$year/$month/$day/$newPhotoName
+        chown $photoOwner:$4 $2/$photoOwner/$year/$month/$day/$newPhotoName
         chmod 750 $2/$photoOwner/$year/$month/$day/$newPhotoName
     fi
     done
 }
 
 main() {
-    if poolV1 $1 $2 $3 $4
-    # Si le pool V1 existe on commence la migration
+    if [ "$(id -u)" = "$3" ]
     then
-        poolV1_to_poolV2 $1 $2 $3 $4
-        # Migration des fichiers photo du pool V1 vers pool V2
-        #ls -l -R $2
+        if poolV1 $1 $2 $3 $4
+        # Si le pool V1 existe on commence la migration
+        then
+            poolV1_to_poolV2 $1 $2 $3 $4
+            # Migration des fichiers photo du pool V1 vers pool V2
+            #ls -l -R $2
+        fi
     fi
 }
 
