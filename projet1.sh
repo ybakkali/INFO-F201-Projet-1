@@ -36,10 +36,10 @@ isUser(){
   # Renvoie True si l'utilisateur existe sur la machine sinon False
 
   if id "$1" >/dev/null 2>&1; then
-        echo "Utilisateur $1 existe"
+        # Utilisateur existe
         return 0
   else
-        echo "Utilisateur $1 n'existe pas"
+        # Utilisateur n'existe pas
         return 1
   fi
 }
@@ -111,7 +111,7 @@ poolV1_to_poolV2(){
         chown $3:$4 $dir1 $dir2 $dir3 $dir4
         chmod 750 $dir1 $dir2 $dir3 $dir4
         # Désigner photo_admin comme propriétaire des répertoires (année/mois/jour)
-
+        # Et fixer les permissions des répertoires
         cp $photoPAtH $2/$photoOwner/$year/$month/$day
         # Copier la photo dans le pool V2
         newPhotoName=${photoName#*_}
@@ -120,6 +120,7 @@ poolV1_to_poolV2(){
         # Renommer la photo
         chown $photoOwner:$4 $2/$photoOwner/$year/$month/$day/$newPhotoName
         chmod 750 $2/$photoOwner/$year/$month/$day/$newPhotoName
+        # Désigner le propriétaire etfixer la permissions du fichier photo
     fi
     done
 }
