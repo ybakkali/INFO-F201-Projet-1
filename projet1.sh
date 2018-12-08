@@ -126,6 +126,8 @@ poolV1_to_poolV2(){
 
 main() {
     if [ "$(id -u)" = "$3" ]
+    #Vérifier que le code est exécuté par le photo admin
+    #qui a le droit de modifier l'arborescence
     then
         if poolV1 $1 $2 $3 $4
         # Si le pool V1 existe on commence la migration
