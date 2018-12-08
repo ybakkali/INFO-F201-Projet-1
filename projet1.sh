@@ -153,7 +153,7 @@ main() {
       echo "Début de la migration du pool V1 vers le pool V2"
       poolV1_to_poolV2 $1 $2 $3 $4
       # Migration des fichiers photo du pool V1 vers pool V2
-      echo "Fin de migration"
+      echo "Fin de la migration"
   fi
 
 }
